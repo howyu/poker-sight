@@ -1,5 +1,5 @@
 "use client";
-// Unified decision pipeline + quantitative learning UI.
+// Unified decision pipeline + quantitative learning UI — polished.
 import {useEffect,useMemo,useState} from "react";
 import SiteNav from "../SiteNav";
 import {glossary} from "../../lib/poker";
