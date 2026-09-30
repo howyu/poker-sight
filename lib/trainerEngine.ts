@@ -14,3 +14,14 @@ function defenseWhy(hand:string,f:Record<TrainerAction,number>){const actions=[f
 export function buildTrainerPool():TrainerSpot[]{const hands=allHandClasses();const spots:TrainerSpot[]=[];positions.forEach((position,p)=>hands.forEach((handClass,h)=>{const a=getRfiAction(position,handClass);const frequencies={fold:a.fold,call:0,raise:a.raise};spots.push({id:"rfi-"+position+"-"+handClass,mode:"rfi",position,villain:"前面玩家全部 Fold",handClass,hand:displayHand(handClass,p+h),stack:"100BB",pot:"1.5BB",prompt:"轮到你在 "+position+" 率先入池，你会怎么做？",frequencies,primary:primary(frequencies),terms:["RFI",position,"Range"],why:rfiWhy(position,handClass,frequencies)})}));hands.forEach((handClass,h)=>{const a=getDefenseAction("btn-bb-2.5",handClass)!;const frequencies={fold:a.fold,call:a.call,raise:a.raise};spots.push({id:"def-btn-bb-"+handClass,mode:"defense",position:"BB",villain:"BTN Open 2.5BB",handClass,hand:displayHand(handClass,h+2),stack:"100BB",pot:"4BB",prompt:"BTN 开池到 2.5BB，轮到大盲的你。",frequencies,primary:primary(frequencies),terms:["Defense","BB","BTN","3-Bet","Pot Odds"],why:defenseWhy(handClass,frequencies)})});return spots}
 export function nextTrainerSpot(pool:TrainerSpot[],previousId?:string){const candidates=pool.filter(x=>x.id!==previousId);return candidates[Math.floor(Math.random()*candidates.length)]??pool[0]}
 export function actionLabel(action:TrainerAction,mode:TrainerMode){if(action==="fold")return "弃牌 Fold";if(action==="call")return "跟注 Call";return mode==="defense"?"3-Bet 再加注":"开池 Raise";}
+export function nextAdaptiveSpot(pool:TrainerSpot[],misses:Record<string,number>,previousId?:string,reviewOnly=false){
+ const eligible=reviewOnly?pool.filter(x=>(misses[x.id]||0)>0):pool;
+ const candidates=(eligible.length?eligible:pool).filter(x=>x.id!==previousId);
+ const weighted:TrainerSpot[]=[];
+ for(const spot of candidates){
+  const miss=misses[spot.id]||0;
+  const weight=reviewOnly?Math.max(1,miss):1+Math.min(4,miss*2);
+  for(let i=0;i<weight;i++)weighted.push(spot);
+ }
+ return weighted[Math.floor(Math.random()*weighted.length)]??candidates[0]??pool[0];
+}
