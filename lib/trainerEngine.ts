@@ -1,0 +1,16 @@
+import {getRfiAction,RfiPosition} from "./preflopRanges";
+import {getDefenseAction} from "./defenseRanges";
+export type TrainerAction="fold"|"call"|"raise";
+export type TrainerMode="rfi"|"defense";
+export type TrainerSpot={id:string;mode:TrainerMode;position:string;villain:string;handClass:string;hand:string;stack:string;pot:string;prompt:string;frequencies:Record<TrainerAction,number>;primary:TrainerAction;terms:string[];why:string;};
+const ranks=["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+const positions:RfiPosition[]=["UTG","HJ","CO","BTN","SB"];
+const suits=["♠","♥","♦","♣"];
+export function allHandClasses(){return ranks.flatMap((a,i)=>ranks.map((b,j)=>i===j?a+b:i<j?a+b+"s":b+a+"o"))}
+function displayHand(h:string,index=0){const a=h[0],b=h[1],type=h[2];if(!type)return a+suits[index%4]+" "+b+suits[(index+1)%4];if(type==="s"){const s=suits[index%4];return a+s+" "+b+s}return a+suits[index%4]+" "+b+suits[(index+1)%4]}
+function primary(f:Record<TrainerAction,number>):TrainerAction{return (Object.entries(f) as [TrainerAction,number][]).sort((a,b)=>b[1]-a[1])[0][0]}
+function rfiWhy(position:RfiPosition,hand:string,f:Record<TrainerAction,number>){const mix=f.raise>0&&f.fold>0;return mix?hand+" 在 "+position+" 属于边界开池牌，参考策略在 Raise 与 Fold 之间混合。位置越靠后，通常可率先加注的范围越宽。":hand+" 在 "+position+" 的参考 RFI 策略以 "+(f.raise>f.fold?"Raise":"Fold")+" 为主。判断重点是位置与整套起手范围，而不是只看牌面绝对强弱。"}
+function defenseWhy(hand:string,f:Record<TrainerAction,number>){const actions=[f.raise?"3-Bet "+f.raise+"%":"",f.call?"Call "+f.call+"%":"",f.fold?"Fold "+f.fold+"%":""].filter(Boolean).join(" / ");return hand+" 面对 BTN 2.5BB Open、Hero 位于 BB 时，参考频率为 "+actions+"。大盲已经投入 1BB，因此防守范围通常比其他位置更宽。"}
+export function buildTrainerPool():TrainerSpot[]{const hands=allHandClasses();const spots:TrainerSpot[]=[];positions.forEach((position,p)=>hands.forEach((handClass,h)=>{const a=getRfiAction(position,handClass);const frequencies={fold:a.fold,call:0,raise:a.raise};spots.push({id:"rfi-"+position+"-"+handClass,mode:"rfi",position,villain:"前面玩家全部 Fold",handClass,hand:displayHand(handClass,p+h),stack:"100BB",pot:"1.5BB",prompt:"轮到你在 "+position+" 率先入池，你会怎么做？",frequencies,primary:primary(frequencies),terms:["RFI",position,"Range"],why:rfiWhy(position,handClass,frequencies)})}));hands.forEach((handClass,h)=>{const a=getDefenseAction("btn-bb-2.5",handClass)!;const frequencies={fold:a.fold,call:a.call,raise:a.raise};spots.push({id:"def-btn-bb-"+handClass,mode:"defense",position:"BB",villain:"BTN Open 2.5BB",handClass,hand:displayHand(handClass,h+2),stack:"100BB",pot:"4BB",prompt:"BTN 开池到 2.5BB，轮到大盲的你。",frequencies,primary:primary(frequencies),terms:["Defense","BB","BTN","3-Bet","Pot Odds"],why:defenseWhy(handClass,frequencies)})});return spots}
+export function nextTrainerSpot(pool:TrainerSpot[],previousId?:string){const candidates=pool.filter(x=>x.id!==previousId);return candidates[Math.floor(Math.random()*candidates.length)]??pool[0]}
+export function actionLabel(action:TrainerAction,mode:TrainerMode){if(action==="fold")return "弃牌 Fold";if(action==="call")return "跟注 Call";return mode==="defense"?"3-Bet 再加注":"开池 Raise";}
