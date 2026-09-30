@@ -41,3 +41,20 @@
 .mathExplainButton{margin-top:2px;border:1px solid #303745;background:#151922;color:#aeb7ff;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:750;cursor:pointer}.mathExplainButton:hover{background:#1b2130}.mathSteps{display:flex;flex-direction:column;gap:10px;margin:14px 0}.mathSteps>div{background:#11161d;border:1px solid #2b323d;border-radius:12px;padding:12px 14px}.mathSteps b{display:block;font-size:14px;margin-bottom:4px}.mathSteps p{margin:0;font-size:13px;line-height:1.55;color:#aab2c0}
 
 .decisionFlow{display:flex;align-items:center;gap:6px;margin:0 0 9px;overflow-x:auto;padding-bottom:2px}.decisionFlow span{display:flex;align-items:center;gap:5px;white-space:nowrap;border:1px solid #2b323d;border-radius:999px;padding:5px 8px;font-size:12px;color:#8f98a8;background:#11161d}.decisionFlow span b{font-size:11px;color:#667084}.decisionFlow .flowDone{color:#cfd5e0;border-color:#394250}.decisionFlow .flowCurrent{color:#dce1ff;border-color:#5363a8;background:#1a2031}.mathStrip em{font-style:normal;font-size:12px;color:#9fa8b8;font-weight:700}@media(max-width:900px){.decisionFlow{padding-bottom:4px}}
+
+/* Unified decision pipeline: qualitative reasoning and quantitative metrics live in one sequence. */
+.decisionPipeline{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0 0 10px}
+.decisionStage{min-width:0;background:#10151c;border:1px solid #2b323d;border-radius:10px;padding:8px 9px;display:flex;flex-direction:column;gap:4px}
+.stageHead{display:flex;align-items:center;gap:6px;color:#8e97a8;font-size:12px}
+.stageHead b{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#202631;color:#aeb7c6;font-size:11px}
+.decisionStage>strong{font-size:13px;line-height:1.3;color:#e4e8f0;white-space:normal}
+.decisionStage>small{font-size:12px;line-height:1.35;color:#848d9d}
+.decisionStage.stageDone{border-color:#394250}
+.decisionStage.stageCurrent{border-color:#5968ac;background:#181f31}
+.decisionStage.stageCurrent .stageHead,.decisionStage.stageCurrent>strong{color:#dce1ff}
+.mathSummary{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:stretch;margin:9px 0}
+.mathSummary>div{background:#10151c;border:1px solid #2b323d;border-radius:10px;padding:9px 10px;display:flex;flex-direction:column;gap:3px}
+.mathSummary span{font-size:12px;color:#8e97a8}.mathSummary b{font-size:13px;color:#dce2ef}
+.mathSummary .mathExplainButton{margin:0;white-space:nowrap}
+@media(max-width:1050px){.decisionPipeline{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:720px){.decisionPipeline{grid-template-columns:repeat(2,minmax(0,1fr))}.mathSummary{grid-template-columns:1fr}.mathSummary .mathExplainButton{width:100%}}
