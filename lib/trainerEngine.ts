@@ -25,3 +25,19 @@ export function nextAdaptiveSpot(pool:TrainerSpot[],misses:Record<string,number>
  }
  return weighted[Math.floor(Math.random()*weighted.length)]??candidates[0]??pool[0];
 }
+
+export type ActionTrailItem={position:string;action:string;hero?:boolean;active?:boolean};
+const order=["UTG","HJ","CO","BTN","SB","BB"];
+export function getActionTrail(spot:TrainerSpot):ActionTrailItem[]{
+ if(spot.mode==="defense")return[
+  {position:"UTG",action:"Fold"},{position:"HJ",action:"Fold"},{position:"CO",action:"Fold"},
+  {position:"BTN",action:"Open 2.5BB",active:true},{position:"SB",action:"Fold"},
+  {position:"BB",action:"Hero 决策",hero:true}
+ ];
+ const heroIndex=order.indexOf(spot.position);
+ return order.map((position,i)=>{
+  if(i<heroIndex)return{position,action:"Fold"};
+  if(i===heroIndex)return{position,action:"Hero 决策",hero:true};
+  return{position,action:"待行动"};
+ });
+}
