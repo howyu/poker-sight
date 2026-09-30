@@ -143,3 +143,20 @@ export const btnVsBbDefense: DefenseRange = {
 
 export function getBtnVsBbAction(hand:string):DefenseAction{return btnVsBbDefense[hand]??{raise:0,call:0,fold:100}}
 export function getBtnVsBbDefensePercent(){let combos=0;for(const [hand,a] of Object.entries(btnVsBbDefense)){const n=hand.length===2?6:hand.endsWith("s")?4:12;combos+=n*((a.raise+a.call)/100)}return combos/1326*100}
+
+export type DefenseScenarioId="btn-bb-2.5"|"co-bb-2.5"|"sb-bb-2.5";
+export type DefenseScenario={id:DefenseScenarioId;opener:"BTN"|"CO"|"SB";hero:"BB";openSize:2.5;label:string;available:boolean;source?:string};
+export const defenseScenarios:DefenseScenario[]=[
+ {id:"btn-bb-2.5",opener:"BTN",hero:"BB",openSize:2.5,label:"BTN → BB",available:true,source:"tyloo/poker-range-analyzer"},
+ {id:"co-bb-2.5",opener:"CO",hero:"BB",openSize:2.5,label:"CO → BB",available:false},
+ {id:"sb-bb-2.5",opener:"SB",hero:"BB",openSize:2.5,label:"SB → BB",available:false}
+];
+export function getDefenseScenario(id:DefenseScenarioId){return defenseScenarios.find(s=>s.id===id)!}
+export function getDefenseAction(id:DefenseScenarioId,hand:string):DefenseAction|null{
+ if(id==="btn-bb-2.5")return getBtnVsBbAction(hand);
+ return null;
+}
+export function getDefensePercent(id:DefenseScenarioId):number|null{
+ if(id==="btn-bb-2.5")return getBtnVsBbDefensePercent();
+ return null;
+}
