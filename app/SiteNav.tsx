@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function SiteNav(){return <header className="siteNav"><Link href="/" className="brand"><span>♠</span> PokerSight</Link><nav><Link href="/trainer">训练</Link><Link href="/matrix">169 矩阵</Link><Link href="/learn">术语</Link></nav></header>}
