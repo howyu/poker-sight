@@ -4,6 +4,7 @@ import SiteNav from "../SiteNav";
 import {glossary} from "../../lib/poker";
 import {actionLabel,buildTrainerPool,getActionTrail,nextAdaptiveSpot,nextTrainerSpot,TrainerAction,TrainerSpot} from "../../lib/trainerEngine";
 import {calculatePotOdds,formatPercent,formatRatio} from "../../lib/pokerMath";
+import {estimatePreflopEquityVsRfiRange} from "../../lib/equityRange";
 
 type Progress={seen:number;score:number;rfiSeen:number;rfiScore:number;defenseSeen:number;defenseScore:number;misses:Record<string,number>};
 const emptyProgress:Progress={seen:0,score:0,rfiSeen:0,rfiScore:0,defenseSeen:0,defenseScore:0,misses:{}};
@@ -39,6 +40,7 @@ export default function Trainer(){
  const mix=Object.entries(spot.frequencies).filter(([,v])=>v>0).map(([a,v])=>actionLabel(a as TrainerAction,spot.mode)+" "+v+"%").join(" · ");
  const actionTrail=getActionTrail(spot);
  const potOdds=spot.mode==="defense"?calculatePotOdds(4,1.5):null;
+ const equity=picked&&spot.mode==="defense"?estimatePreflopEquityVsRfiRange(spot.hand,"BTN",3000):null;
  const hit=progress.seen?Math.round(progress.score/progress.seen*100):0;
  const topMisses=Object.entries(progress.misses).sort((a,b)=>b[1]-a[1]).slice(0,3);
  return <main><SiteNav/><section className="pageHead trainerHead compactTrainerHead"><div><p className="eyebrow">DYNAMIC PREFLOP TRAINER</p><h1>Preflop 实战训练</h1><p>从现有 Range 数据动态出题。先做决定，再看频率与解释。</p></div><div className="scoreCard"><small>总训练</small><strong>{progress.seen}</strong><span>可接受决策 {hit}%</span></div></section>
@@ -47,7 +49,7 @@ export default function Trainer(){
   <div className="table"><div className="seat top">{spot.mode==="defense"?"BTN":"TABLE"}<br/><small>{spot.villain}</small></div><div className="felt"><span className="pot">POT {spot.pot}</span><div className="cards"><b>{spot.hand.split(" ")[0]}</b><b>{spot.hand.split(" ")[1]}</b></div><strong>Hero · <button className="term" onClick={()=>setTerm(spot.position)}>{spot.position}</button></strong><small>{spot.stack} effective</small></div><div className="seat bottom">YOU</div></div>
   <div className="decision"><div className="spotMeta"><span>{spot.mode==="rfi"?"RFI":"DEFENSE"}</span><b>{spot.handClass}</b></div><div className="actionTrail" aria-label="Preflop action order">{actionTrail.map((item,i)=><div key={item.position} className={"actionStep "+(item.hero?"heroStep ":"")+(item.active?"activeStep":"")}><span>{item.position}</span><b>{item.action}</b>{i<actionTrail.length-1&&<i>→</i>}</div>)}</div><h2>{spot.prompt}</h2><p className="terms">本题概念：{spot.terms.map(x=><button key={x} onClick={()=>setTerm(x)}>{x}</button>)}</p>
    <div className="actions">{(["fold","call","raise"] as TrainerAction[]).map(a=>{const available=spot.frequencies[a]>0;return <button key={a} disabled={!!picked} className={picked===a?(available?"correct":"wrong"):""} onClick={()=>choose(a)}>{actionLabel(a,spot.mode)}</button>})}</div>
-   {picked&&<div className="feedback"><span className="badge">{spot.frequencies[picked]>0?"✓ 参考策略允许这个动作":"→ 这个动作不在参考策略中"}</span><h3>参考频率：{mix}</h3><p>{spot.why}</p>{potOdds&&<div className="mathStrip"><span><small>跟注成本</small><b>{potOdds.callCost.toFixed(1)} BB</b></span><span><small>底池赔率</small><b>{formatRatio(potOdds.rewardToRisk)}</b></span><span><small>最低权益</small><b>{formatPercent(potOdds.breakEvenEquity)}</b></span></div>}<p className="note">混合策略意味着多个动作都可能正确；错题会在后续随机训练中获得更高抽样权重。</p>{sessionSeen>=sessionSize?<button className="next" onClick={restartSession}>本轮完成 · 再来 10 题 →</button>:<button className="next" onClick={next}>下一题 →</button>}</div>}
+   {picked&&<div className="feedback"><span className="badge">{spot.frequencies[picked]>0?"✓ 参考策略允许这个动作":"→ 这个动作不在参考策略中"}</span><h3>参考频率：{mix}</h3><p>{spot.why}</p>{potOdds&&<div className="mathStrip"><span><small>跟注成本</small><b>{potOdds.callCost.toFixed(1)} BB</b></span><span><small>底池赔率</small><b>{formatRatio(potOdds.rewardToRisk)}</b></span><span><small>最低权益</small><b>{formatPercent(potOdds.breakEvenEquity)}</b></span>{equity&&<><span><small>vs BTN RFI Equity</small><b>{formatPercent(equity.equity)}</b></span><span><small>高于门槛</small><b>{formatPercent(equity.equity-potOdds.breakEvenEquity)}</b></span><span><small>估算方法</small><b>{equity.samples.toLocaleString()} samples</b></span></>}</div>}<p className="note">Equity 使用 Hero 当前具体花色，对 BTN RFI 开池范围按 Raise 频率加权抽样，并随机发满 5 张公共牌。它是可复现的 Monte Carlo 估算，不是 JEV 输出；Pot Odds 门槛则由底池与跟注成本直接计算。</p>{sessionSeen>=sessionSize?<button className="next" onClick={restartSession}>本轮完成 · 再来 10 题 →</button>:<button className="next" onClick={next}>下一题 →</button>}</div>}
   </div>
  </section>
  <section className="trainerReview compactReview"><div><small>训练机制</small><strong>10</strong><span>每轮 10 题 · 错题自动加权</span></div><div><small>常错</small>{topMisses.length?topMisses.map(([id,n])=><span key={id}>{id.replaceAll("-"," ")} · 错 {n} 次</span>):<span>暂无错题；产生错题后可切到“错题重练”。</span>}</div></section>
