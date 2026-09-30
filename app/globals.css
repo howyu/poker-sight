@@ -58,3 +58,26 @@
 .mathSummary .mathExplainButton{margin:0;white-space:nowrap}
 @media(max-width:1050px){.decisionPipeline{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:720px){.decisionPipeline{grid-template-columns:repeat(2,minmax(0,1fr))}.mathSummary{grid-template-columns:1fr}.mathSummary .mathExplainButton{width:100%}}
+
+/* Visual polish for unified trainer decision pipeline */
+.decisionPipeline{position:relative;gap:8px}
+.decisionPipeline:before{content:"";position:absolute;left:18px;right:18px;top:29px;height:1px;background:linear-gradient(90deg,#343b48,#5968ac 48%,#343b48);opacity:.8;z-index:0}
+.decisionStage{position:relative;z-index:1;background:linear-gradient(180deg,#121821,#0f141b);border-color:#303846;box-shadow:0 8px 20px #00000024;transition:.18s ease}
+.decisionStage:hover{transform:translateY(-1px);border-color:#4b5668}
+.stageHead{justify-content:space-between}
+.stageHead b{width:22px;height:22px;background:#202938;border:1px solid #344050;color:#c7d0df}
+.decisionStage>strong{font-size:14px;font-weight:800;letter-spacing:-.1px}
+.decisionStage>small{min-height:30px}
+.decisionStage.stageDone{background:linear-gradient(180deg,#141a22,#10151c);border-color:#3a4554}
+.decisionStage.stageDone .stageHead b{background:#1b302b;border-color:#315447;color:#76d7b2}
+.decisionStage.stageCurrent{background:linear-gradient(180deg,#202945,#171d31);border-color:#6e7ed1;box-shadow:0 0 0 1px #7787e633,0 10px 26px #00000030}
+.decisionStage.stageCurrent .stageHead b{background:#5363a8;border-color:#7e8ee1;color:white}
+.mathSummary{margin-top:10px}
+.mathSummary>div{background:linear-gradient(180deg,#121821,#0f141b);border-color:#303846}
+.mathSummary>div:nth-child(2){border-color:#405344}
+.mathSummary>div:nth-child(2) b{color:#91e0bd}
+.mathSummary span{text-transform:none;letter-spacing:.1px}
+.mathExplainButton{border-color:#3d4760;background:#171d29}
+.mathExplainButton:hover{border-color:#6372bc;background:#1e2636}
+.feedback .badge{display:inline-flex;align-items:center;gap:6px;font-weight:750}
+@media(max-width:1050px){.decisionPipeline:before{display:none}}
