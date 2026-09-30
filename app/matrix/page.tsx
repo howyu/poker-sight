@@ -1,0 +1,1 @@
+import SiteNav from "../SiteNav";import StartingHandMatrix from "../StartingHandMatrix";export default function MatrixPage(){return <main><SiteNav/><StartingHandMatrix/></main>}
