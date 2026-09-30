@@ -14,3 +14,15 @@ The upstream repository describes these as GTO preflop ranges. PokerSight presen
 MIT permission notice:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to inclusion of the upstream copyright and permission notice.
+
+## Poker Apprentice Hand Evaluator
+
+PokerSight's deterministic hand-ranking layer and Monte Carlo Equity estimator use **@poker-apprentice/hand-evaluator**.
+
+- Upstream: https://github.com/poker-apprentice/hand-evaluator
+- Package: @poker-apprentice/hand-evaluator
+- Version integrated: ^4.3.0
+- License declared by upstream package metadata: MIT
+- Copyright/author attribution from upstream package metadata: Matt Huggins <matt.huggins@gmail.com>
+
+PokerSight uses the evaluator for card/hand comparison only. Opponent Range weighting, sampling, Pot Odds comparison, training logic, and learner-facing explanations are implemented in PokerSight.

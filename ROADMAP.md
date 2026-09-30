@@ -43,6 +43,7 @@ Goal: make the canonical 13x13 matrix something a beginner repeatedly checks unt
 - Mixed-strategy frequency visualization.
 - Range comparison mode.
 - Spaced repetition for hands/ranges the learner repeatedly misses.
+- Parked enhancement: progressive RFI learning, position-to-position delta maps, and boundary-hand drills. Keep available as a future learning track, but do not deepen it before the math engine is established.
 
 ### M3 — Poker Math Engine
 - Adopt or integrate a validated hand evaluator rather than writing one by default.
@@ -66,8 +67,8 @@ Goal: make the canonical 13x13 matrix something a beginner repeatedly checks unt
 A PR should normally map to one roadmap capability and be independently previewable and revertible. Merge a stable vertical slice before starting a materially different subsystem. Research/licensing decisions should be documented before importing third-party code or datasets.
 
 ## Near-term sequence
-1. Merge M0 once Preview/Production is verified.
-2. PR #2: interactive 169-hand matrix shell and memory UX.
-3. PR #3: validated position-based range dataset + provenance.
-4. PR #4: equity/pot-odds engine integration.
-5. PR #5+: adaptive review and JEV coaching.
+1. Finish deterministic poker math foundations: Pot Odds / break-even Equity, then hand-vs-range Equity.
+2. Compare estimated Equity directly against the Pot Odds threshold in training feedback.
+3. Add basic EV once Equity is trustworthy and assumptions are explicit.
+4. Keep RFI progressive/boundary training as a parked learning enhancement rather than the current development focus.
+5. Introduce the JEV structured decision layer only after the deterministic math layer is stable.
