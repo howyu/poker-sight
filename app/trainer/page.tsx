@@ -1,4 +1,47 @@
-"use client";import {useEffect,useState} from "react";import SiteNav from "../SiteNav";import {glossary,spots,Action} from "../../lib/poker";
-const labels:Record<Action,string>={fold:"弃牌 Fold",call:"跟注 Call",raise:"加注 Raise"};
-const quickCards=[{id:"strength",title:"起手牌强度",icon:"◆",value:"查看矩阵",body:"起手牌没有脱离位置与行动的唯一真值。先建立 169 类牌型结构，再叠加 Position Range。"},{id:"equity",title:"胜率 / Equity",icon:"%",value:"范围对范围",body:"Equity 取决于对手范围、人数与后续公共牌。真实计算引擎将在后续版本接入。"},{id:"odds",title:"底池赔率",icon:"÷",value:"跟注门槛",body:"把跟注成本与最终底池比较，再与 Equity 对照，判断数学上是否值得继续。"}];
-export default function Trainer(){const [i,setI]=useState(0),[picked,setPicked]=useState<Action|null>(null),[term,setTerm]=useState<string|null>(null),[quick,setQuick]=useState<string|null>(null),[score,setScore]=useState(0),[seen,setSeen]=useState(0);const s=spots[i];useEffect(()=>{const raw=localStorage.getItem("pokersight-progress");if(raw){const p=JSON.parse(raw);setScore(p.score||0);setSeen(p.seen||0)}},[]);function choose(a:Action){if(picked)return;setPicked(a);const ok=a===s.answer;const ns=score+(ok?1:0),nv=seen+1;setScore(ns);setSeen(nv);localStorage.setItem("pokersight-progress",JSON.stringify({score:ns,seen:nv}))}function next(){setPicked(null);setTerm(null);setI((i+1)%spots.length)}return <main><SiteNav/><section className="pageHead"><div><p className="eyebrow">DECISION TRAINING</p><h1>Preflop 决策训练</h1><p>先自己判断，再看解释。遇到术语直接点开。</p></div><div className="scoreCard"><small>学习进度</small><strong>{seen}</strong><span>命中 {seen?Math.round(score/seen*100):0}%</span></div></section><section className="trainer"><div className="table"><div className="seat top">CO<br/><small>{s.villain}</small></div><div className="felt"><span className="pot">POT {s.pot}</span><div className="cards"><b>{s.hand.split(" ")[0]}</b><b>{s.hand.split(" ")[1]}</b></div><strong>Hero · <button className="term" onClick={()=>setTerm(s.position)}>{s.position}</button></strong><small>{s.stack} effective</small></div><div className="seat bottom">YOU</div></div><div className="decision"><h2>{s.prompt}</h2><p className="terms">本题概念：{s.terms.map(x=><button key={x} onClick={()=>setTerm(x)}>{x}</button>)}</p><div className="quickbar">{quickCards.map(q=><button key={q.id} onClick={()=>setQuick(quick===q.id?null:q.id)}><span>{q.icon}</span>{q.title}</button>)}</div>{quick&&<div className="quickpanel">{quickCards.filter(q=>q.id===quick).map(q=><div key={q.id}><small>QUICK DATA</small><h3>{q.title} · {q.value}</h3><p>{q.body}</p></div>)}</div>}<div className="actions">{(["fold","call","raise"] as Action[]).map(a=><button key={a} disabled={!!picked} className={picked===a?(a===s.answer?"correct":"wrong"):""} onClick={()=>choose(a)}>{labels[a]}</button>)}</div>{picked&&<div className="feedback"><span className="badge">{picked===s.answer?"✓ 基准决策一致":"→ 值得复习"}</span><h3>参考策略：{s.mix}</h3><p>{s.why}</p><p className="note">当前为教学用简化基准；后续版本将接入可验证的 GTO 数据与 JEV 决策层。</p><button className="next" onClick={next}>下一题 →</button></div>}</div></section>{term&&glossary[term]&&<div className="overlay" onClick={()=>setTerm(null)}><article onClick={e=>e.stopPropagation()}><button className="close" onClick={()=>setTerm(null)}>×</button><p className="eyebrow">POKER TERM</p><h2>{term} · {glossary[term].zh}</h2><strong>{glossary[term].short}</strong><p>{glossary[term].detail}</p><button className="next" onClick={()=>setTerm(null)}>知道了</button></article></div>}</main>}
+"use client";
+import {useEffect,useMemo,useState} from "react";
+import SiteNav from "../SiteNav";
+import {glossary} from "../../lib/poker";
+import {actionLabel,buildTrainerPool,nextTrainerSpot,TrainerAction,TrainerSpot} from "../../lib/trainerEngine";
+
+type Progress={seen:number;score:number;rfiSeen:number;rfiScore:number;defenseSeen:number;defenseScore:number;misses:Record<string,number>};
+const emptyProgress:Progress={seen:0,score:0,rfiSeen:0,rfiScore:0,defenseSeen:0,defenseScore:0,misses:{}};
+
+export default function Trainer(){
+ const pool=useMemo(()=>buildTrainerPool(),[]);
+ const [spot,setSpot]=useState<TrainerSpot>(pool[0]);
+ const [picked,setPicked]=useState<TrainerAction|null>(null);
+ const [term,setTerm]=useState<string|null>(null);
+ const [modeFilter,setModeFilter]=useState<"all"|"rfi"|"defense">("all");
+ const [progress,setProgress]=useState<Progress>(emptyProgress);
+ useEffect(()=>{const raw=localStorage.getItem("pokersight-trainer-progress-v2");if(raw){try{setProgress({...emptyProgress,...JSON.parse(raw)})}catch{}}setSpot(nextTrainerSpot(pool));},[pool]);
+ const activePool=modeFilter==="all"?pool:pool.filter(x=>x.mode===modeFilter);
+ function choose(a:TrainerAction){
+  if(picked)return;
+  setPicked(a);
+  const freq=spot.frequencies[a],ok=freq>0;
+  const next={...progress,misses:{...progress.misses},seen:progress.seen+1,score:progress.score+(ok?1:0)};
+  if(spot.mode==="rfi"){next.rfiSeen++;if(ok)next.rfiScore++}else{next.defenseSeen++;if(ok)next.defenseScore++}
+  if(!ok)next.misses[spot.id]=(next.misses[spot.id]||0)+1;
+  setProgress(next);localStorage.setItem("pokersight-trainer-progress-v2",JSON.stringify(next));
+ }
+ function next(){
+  setPicked(null);setTerm(null);setSpot(nextTrainerSpot(activePool,spot.id));
+ }
+ function changeMode(v:"all"|"rfi"|"defense"){setModeFilter(v);setPicked(null);const p=v==="all"?pool:pool.filter(x=>x.mode===v);setSpot(nextTrainerSpot(p,spot.id))}
+ const mix=Object.entries(spot.frequencies).filter(([,v])=>v>0).map(([a,v])=>actionLabel(a as TrainerAction,spot.mode)+" "+v+"%").join(" · ");
+ const hit=progress.seen?Math.round(progress.score/progress.seen*100):0;
+ const topMisses=Object.entries(progress.misses).sort((a,b)=>b[1]-a[1]).slice(0,3);
+ return <main><SiteNav/><section className="pageHead trainerHead"><div><p className="eyebrow">DYNAMIC PREFLOP TRAINER</p><h1>Preflop 实战训练</h1><p>题目从当前 Range 数据动态生成，不再循环固定样例。先做决定，再看频率与解释。</p></div><div className="scoreCard"><small>总训练</small><strong>{progress.seen}</strong><span>可接受决策 {hit}%</span></div></section>
+ <section className="trainerToolbar"><div className="segmented">{(["all","rfi","defense"] as const).map(v=><button key={v} className={modeFilter===v?"active":""} onClick={()=>changeMode(v)}>{v==="all"?"全部":v==="rfi"?"RFI":"Defense"}</button>)}</div><div className="trainerStats"><span>RFI {progress.rfiSeen?Math.round(progress.rfiScore/progress.rfiSeen*100):0}%</span><span>Defense {progress.defenseSeen?Math.round(progress.defenseScore/progress.defenseSeen*100):0}%</span><span>题库 {activePool.length}</span></div></section>
+ <section className="trainer">
+  <div className="table"><div className="seat top">{spot.mode==="defense"?"BTN":"TABLE"}<br/><small>{spot.villain}</small></div><div className="felt"><span className="pot">POT {spot.pot}</span><div className="cards"><b>{spot.hand.split(" ")[0]}</b><b>{spot.hand.split(" ")[1]}</b></div><strong>Hero · <button className="term" onClick={()=>setTerm(spot.position)}>{spot.position}</button></strong><small>{spot.stack} effective</small></div><div className="seat bottom">YOU</div></div>
+  <div className="decision"><div className="spotMeta"><span>{spot.mode==="rfi"?"RFI":"DEFENSE"}</span><b>{spot.handClass}</b></div><h2>{spot.prompt}</h2><p className="terms">本题概念：{spot.terms.map(x=><button key={x} onClick={()=>setTerm(x)}>{x}</button>)}</p>
+   <div className="actions">{(["fold","call","raise"] as TrainerAction[]).map(a=>{const available=spot.frequencies[a]>0;return <button key={a} disabled={!!picked} className={picked===a?(available?"correct":"wrong"):""} onClick={()=>choose(a)}>{actionLabel(a,spot.mode)}</button>})}</div>
+   {picked&&<div className="feedback"><span className="badge">{spot.frequencies[picked]>0?"✓ 参考策略允许这个动作":"→ 这个动作不在参考策略中"}</span><h3>参考频率：{mix}</h3><p>{spot.why}</p><p className="note">混合策略意味着多个动作都可能正确；训练器按“该动作是否具有非零参考频率”判断可接受性，而不是强行只认一个答案。</p><button className="next" onClick={next}>下一题 →</button></div>}
+  </div>
+ </section>
+ <section className="trainerReview"><div><small>题库覆盖</small><strong>{pool.length}</strong><span>845 个 RFI spot + 169 个 BTN→BB Defense spot</span></div><div><small>复习提示</small>{topMisses.length?topMisses.map(([id,n])=><span key={id}>{id.replaceAll("-"," ")} · 错 {n} 次</span>):<span>完成更多题目后，这里会显示最常错场景。</span>}</div></section>
+ {term&&glossary[term]&&<div className="overlay" onClick={()=>setTerm(null)}><article onClick={e=>e.stopPropagation()}><button className="close" onClick={()=>setTerm(null)}>×</button><p className="eyebrow">POKER TERM</p><h2>{term} · {glossary[term].zh}</h2><strong>{glossary[term].short}</strong><p>{glossary[term].detail}</p><button className="next" onClick={()=>setTerm(null)}>知道了</button></article></div>}
+ </main>
+}
