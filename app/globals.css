@@ -81,3 +81,9 @@
 .mathExplainButton:hover{border-color:#6372bc;background:#1e2636}
 .feedback .badge{display:inline-flex;align-items:center;gap:6px;font-weight:750}
 @media(max-width:1050px){.decisionPipeline:before{display:none}}
+
+.mathSummary:has(>div:nth-of-type(3)){grid-template-columns:repeat(3,minmax(0,1fr));}
+.mathSummary:has(>div:nth-of-type(3)) .mathExplainButton{grid-column:1/-1;justify-self:start}
+.mathSummary>div:nth-of-type(3){border-color:#4b3f62}
+.mathSummary>div:nth-of-type(3) b{color:#c9b7ff}
+@media(max-width:900px){.mathSummary:has(>div:nth-of-type(3)){grid-template-columns:1fr}}
