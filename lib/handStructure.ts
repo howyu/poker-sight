@@ -14,7 +14,7 @@ export const structureGroups = {
 export type StructureGroup = keyof typeof structureGroups;
 const order='23456789TJQKA';
 export function handStructure(h:string):StructureGroup {
-  const [a,b]=h;
+  const a=h[0],b=h[1];
   if(h.length===2) return 'JQKA'.includes(a)?'pair-high':'789T'.includes(a)?'pair-mid':'pair-low';
   const suited=h.endsWith('s');
   if('TJQKA'.includes(a)&&'TJQKA'.includes(b)) return suited?'broadway-suited':'broadway-offsuit';
