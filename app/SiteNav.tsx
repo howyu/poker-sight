@@ -1,2 +1,2 @@
 import Link from "next/link";
-export default function SiteNav(){return <header className="siteNav"><Link href="/" className="brand"><span>♠</span> PokerSight</Link><nav><Link href="/trainer">训练</Link><Link href="/matrix">169 矩阵</Link><Link href="/learn">术语与规则</Link></nav></header>}
+export default function SiteNav(){return <header className="siteNav"><Link href="/" className="brand"><span>♠</span> PokerSight</Link><nav><Link href="/trainer">训练</Link><Link href="/matrix">169 矩阵</Link><Link href="/learn">术语与规则</Link><Link href="/showdown">摊牌比大小</Link><Link href="/numbers">数字速算</Link></nav></header>}

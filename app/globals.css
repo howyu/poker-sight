@@ -87,3 +87,12 @@
 .mathSummary>div:nth-of-type(3){border-color:#4b3f62}
 .mathSummary>div:nth-of-type(3) b{color:#c9b7ff}
 @media(max-width:900px){.mathSummary:has(>div:nth-of-type(3)){grid-template-columns:1fr}}
+
+@media(max-width:760px){.siteNav nav{grid-template-columns:repeat(4,minmax(0,1fr))}.siteNav nav a{font-size:12px;padding:10px 3px}}
+
+@media(max-width:760px){.siteNav nav{grid-template-columns:repeat(5,minmax(0,1fr))}.siteNav nav a{font-size:11px}}
+
+/* Structural groups and unconditional deal probabilities; no strength ordering. */
+.handProbability{display:flex;flex-direction:column;gap:5px;border-top:1px solid var(--line);margin-top:10px;padding-top:10px}.handProbability b,.handProbability span{font-size:12px;color:#c0c9dc}.structureLegend{grid-template-columns:1fr!important;gap:7px!important}.structureLegend>span{display:flex;width:100%;gap:7px;font-size:12px}.structureLegend em{font-style:normal;color:#b5bed0;margin-left:auto;font-variant-numeric:tabular-nums}.structureRule{font-size:12px!important;line-height:1.55!important;color:#a7b1c3!important;margin:0}.structureRule a{display:block;color:#b3bdff;margin-top:5px}.handCell.structureCell{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;color:#fff}.handCell.structureCell .dealProbability{display:block;position:static;font-size:10px;line-height:1.1;color:#eef1f6}.handCell:focus-visible{outline:2px solid white;outline-offset:2px}.matrixControls:has(.structureLegend){gap:10px}@media(max-width:900px){.structureLegend{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-column:1/-1}.structureRule{grid-column:1/-1}}@media(max-width:620px){.matrixMain .structureCell b{font-size:clamp(8px,2.35vw,12px)}.handCell.structureCell{gap:2px}.handCell.structureCell .dealProbability{font-size:clamp(6px,1.65vw,9px)}}
+
+.equityCondition{max-width:920px;margin:0 auto 14px;color:#c2cbe5;background:#171e30;border:1px solid #394767;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.6}.matrixControls:has(.structureLegend) .sideNote{font-size:12px!important}.handProbability b:not(:first-child){border-top:1px solid var(--line);padding-top:8px;margin-top:3px}
