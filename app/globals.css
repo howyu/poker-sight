@@ -4,12 +4,12 @@
 .potDisplay{text-align:center;background:#151a22cc;border:1px solid #444c5a;border-radius:14px;padding:10px 14px;min-width:92px;box-shadow:0 8px 24px #0006}.potDisplay small{display:block;font-size:10px;color:#7f8796;letter-spacing:1.2px}.potDisplay strong{display:block;font-size:19px;margin:2px 0}.potDisplay span{font-size:11px;color:#a5adba}
 .boardGhost {
   order: -1;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: min(92%, 240px);
   gap: 5px;
 }
 .boardGhost i {
-  display: block;
-  width: clamp(26px, 8vw, 34px);
   aspect-ratio: 5 / 7;
   border: 1px dashed #ffffff30;
   border-radius: 5px;
