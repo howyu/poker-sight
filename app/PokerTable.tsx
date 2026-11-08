@@ -21,7 +21,7 @@ export default function PokerTable({ seats, pot, seatHref, className }: PokerTab
     <div className={className ? `pokerStage ${className}` : "pokerStage"}>
       <div className="pokerRail">
         <div className="pokerFelt">
-          <div className="feltMark">POKERSIGHT</div>
+          <div className="tableDirection">顺时针 · BTN → SB → BB</div>
           <div className="potDisplay"><small>POT</small><strong>{pot}</strong><span>Preflop</span></div>
           <div className="boardGhost" aria-label="五张公共牌尚未发出">
             <i /><i /><i /><i /><i />
@@ -38,7 +38,8 @@ export default function PokerTable({ seats, pot, seatHref, className }: PokerTab
               <div className="seatLine">
                 <strong>{position}</strong>
                 {position === "BTN" && <span className="dealerChip">D</span>}
-                {(position === "SB" || position === "BB") && <span className="blindChip">{position}</span>}
+                {position === "SB" && <span className="blindChip">0.5 BB</span>}
+                {position === "BB" && <span className="blindChip">1 BB</span>}
               </div>
               {seat.name && <span>{seat.name}</span>}
               {seat.stack && <small>{seat.stack}</small>}
