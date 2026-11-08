@@ -1,6 +1,7 @@
 "use client";
 // Unified decision pipeline + quantitative learning UI — polished + EV.
 import {useEffect,useMemo,useState} from "react";
+import PokerTable from "../PokerTable";
 import SiteNav from "../SiteNav";
 import {glossary} from "../../lib/poker";
 import {actionLabel,buildTrainerPool,getActionTrail,nextAdaptiveSpot,nextTrainerSpot,TrainerAction,TrainerSpot} from "../../lib/trainerEngine";
@@ -67,7 +68,18 @@ export default function Trainer(){
  return <main><SiteNav/><section className="pageHead trainerHead compactTrainerHead"><div><p className="eyebrow">DYNAMIC PREFLOP TRAINER</p><h1>Preflop 实战训练</h1><p>从现有 Range 数据动态出题。先做决定，再看频率与解释。</p></div><div className="scoreCard"><small>总训练</small><strong>{progress.seen}</strong><span>可接受决策 {hit}%</span></div></section>
  <section className="trainerToolbar"><div className="segmented">{(["all","rfi","defense","review"] as const).map(v=><button key={v} disabled={v==="review"&&Object.keys(progress.misses).length===0} className={modeFilter===v?"active":""} onClick={()=>changeMode(v)}>{v==="all"?"全部":v==="rfi"?"RFI":v==="defense"?"Defense":"错题重练"}</button>)}</div><div className="trainerStats"><span>RFI {progress.rfiSeen?Math.round(progress.rfiScore/progress.rfiSeen*100):0}%</span><span>Defense {progress.defenseSeen?Math.round(progress.defenseScore/progress.defenseSeen*100):0}%</span><span>Session {sessionSeen}/{sessionSize}</span><span>本轮 {sessionSeen?Math.round(sessionScore/sessionSeen*100):0}%</span><button className="methodButton" onClick={()=>setShowMethod(true)}>这些频率怎么来的？</button></div></section>
  <section className="trainer">
-  <div className="table"><div className="seat top">{spot.mode==="defense"?"BTN":"TABLE"}<br/><small>{spot.villain}</small></div><div className="felt"><span className="pot">POT {spot.pot}</span><div className="cards"><b>{spot.hand.split(" ")[0]}</b><b>{spot.hand.split(" ")[1]}</b></div><strong>Hero · <button className="term" onClick={()=>setTerm(spot.position)}>{spot.position}</button></strong><small>{spot.stack} effective</small></div><div className="seat bottom">YOU</div></div>
+  <div className="trainerTable">
+   <PokerTable seats={actionTrail} pot={spot.pot} className="trainerPokerStage" />
+   <div className="trainerHand">
+    <div className="cards" aria-label="你的两张手牌">
+     {spot.hand.split(" ").map(card => <b key={card} className={/[♥♦]$/.test(card) ? "redSuit" : undefined}>{card}</b>)}
+    </div>
+    <div>
+     <strong>你的手牌 · <button className="term" onClick={()=>setTerm(spot.position)}>{spot.position}</button></strong>
+     <small>有效筹码 {spot.stack}</small>
+    </div>
+   </div>
+  </div>
   <div className="decision"><div className="spotMeta"><span>{spot.mode==="rfi"?"RFI":"DEFENSE"}</span><b>{spot.handClass}</b></div><div className="decisionPipeline" aria-label="Decision flow">{decisionStages.map((stage,i)=><div key={stage.label} className={"decisionStage "+((picked||i<3)?"stageDone ":"")+(i===3&&!picked?"stageCurrent":"")}><div className="stageHead"><b>{i+1}</b><span>{stage.label}</span></div><strong>{stage.value}</strong><small>{stage.hint}</small></div>)}</div><div className="actionTrail" aria-label="Preflop action order">{actionTrail.map((item,i)=><div key={item.position} className={"actionStep "+(item.hero?"heroStep ":"")+(item.active?"activeStep":"")}><span>{item.position}</span><b>{item.action}</b>{i<actionTrail.length-1&&<i>→</i>}</div>)}</div><h2>{spot.prompt}</h2><p className="terms">本题概念：{spot.terms.map(x=><button key={x} onClick={()=>setTerm(x)}>{x}</button>)}</p>
    <div className="actions">{(["fold","call","raise"] as TrainerAction[]).map(a=>{const available=spot.frequencies[a]>0;return <button key={a} disabled={!!picked} className={picked===a?(available?"correct":"wrong"):""} onClick={()=>choose(a)}>{actionLabel(a,spot.mode)}</button>})}</div>
    {picked&&<div className="feedback"><span className="badge">{spot.frequencies[picked]>0?"✓ 参考策略允许这个动作":"→ 这个动作不在参考策略中"}</span><h3>参考频率：{mix}</h3><p>{spot.why}</p>{potOdds&&<div className="mathSummary"><div><span>价格换算</span><b>{formatRatio(potOdds.rewardToRisk)} → {formatPercent(potOdds.breakEvenEquity)} {quickEquity}</b></div>{equity&&<div><span>Equity 对比</span><b>{formatPercent(equity.equity)} vs {formatPercent(potOdds.breakEvenEquity)} · 余量 {formatPercent(equity.equity-potOdds.breakEvenEquity)}</b></div>}{callEv&&<div><span>简化 Call EV</span><b>{formatBb(callEv.callEv)} · Fold = 0 BB</b></div>}<button className="mathExplainButton" onClick={()=>setShowMath(true)}>展开计算过程</button></div>}<p className="note">Equity 使用 Hero 当前具体花色，对 BTN RFI 开池范围按 Raise 频率加权抽样，并随机发满 5 张公共牌。它是可复现的 Monte Carlo 估算，不是 JEV 输出；Pot Odds 门槛则由底池与跟注成本直接计算。</p>{sessionSeen>=sessionSize?<button className="next" onClick={restartSession}>本轮完成 · 再来 10 题 →</button>:<button className="next" onClick={next}>下一题 →</button>}</div>}
